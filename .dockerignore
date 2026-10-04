@@ -1,0 +1,9 @@
+.venv
+.git
+.pytest_cache
+__pycache__
+*.pyc
+# Secrets are passed as environment variables, never baked into the image.
+.env
+# Several gigabytes of saved API responses and backups; mounted at runtime.
+data

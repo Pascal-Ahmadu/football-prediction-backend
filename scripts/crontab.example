@@ -1,0 +1,17 @@
+# The schedule this project needs on a Linux server. Install with:
+#   crontab scripts/crontab.example
+# Times are the server's local time, so set the timezone first:
+#   sudo timedatectl set-timezone Europe/London
+#
+# Paths assume the project is at /opt/fmep; change PROJECT if it is elsewhere.
+PROJECT=/opt/fmep
+SHELL=/bin/bash
+
+# Monday 07:00 -- full refresh: results, fixtures, features, forecasts, settlement
+0 7 * * 1 cd $PROJECT && scripts/run_weekly.sh
+
+# Thursday 18:00 -- short refresh once weekend referees are named, with market prices
+0 18 * * 4 cd $PROJECT && scripts/run_weekly.sh --days-back 3 --days-ahead 4 --with-odds
+
+# Nightly 03:30 -- database backup
+30 3 * * * cd $PROJECT && scripts/backup_db.sh >> data/logs/backup.log 2>&1

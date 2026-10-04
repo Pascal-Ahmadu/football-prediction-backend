@@ -1,0 +1,24 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment and secrets (NFR-SEC-02)
+.env
+.env.*
+!.env.example
+
+# Data and artefacts
+*.db
+data/
+mlruns/
+models_artifacts/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
