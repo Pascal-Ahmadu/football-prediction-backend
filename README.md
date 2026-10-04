@@ -1,7 +1,7 @@
 # Football micro-event prediction backend
 
-Forecasts five football markets — total corners, total cards, total fouls, player
-shots on target and player fouls committed — for 17 European leagues, and scores
+Forecasts five football markets (total corners, total cards, total fouls, player
+shots on target and player fouls committed) for 17 European leagues, and scores
 its own forecasts against results and bookmaker prices afterwards.
 
 Built to the BRD/SRD specification BRD-SRD-FMEP-001. Python 3.12, FastAPI,
@@ -17,8 +17,8 @@ Each market was developed on the 2024/25 season and then evaluated **once** on
 | Total fouls | 24.5 | 5,602 matches | +0.0881 | 67.7% | 0.0174 |
 | Total cards | 4.5 | 5,624 matches | +0.0240 | 60.6% | 0.0116 |
 | Total corners | 9.5 | 5,623 matches | +0.0067 | 55.1% | 0.0161 |
-| Player fouls committed | 0.5 | 174,006 appearances | +0.0217 | — | 0.0074 |
-| Player shots on target | 0.5 | 174,006 appearances | +0.0147 | — | 0.0048 |
+| Player fouls committed | 0.5 | 174,006 appearances | +0.0217 | n/a | 0.0074 |
+| Player shots on target | 0.5 | 174,006 appearances | +0.0147 | n/a | 0.0048 |
 
 "Beats baseline by" is the reduction in log loss against that market's own
 baseline: for match markets, always predicting the side more common in that
@@ -29,7 +29,7 @@ under 0.02 and all five markets meet it.
 
 Accuracy is not profit. On the market prices collected so far, bookmaker margins
 on these markets average 8.7%, and whether any edge survives that is still being
-measured — see [Measuring value](#measuring-value).
+measured. See [Measuring value](#measuring-value).
 
 ## How it works
 
@@ -46,7 +46,7 @@ providers ──► core (matches, teams, referees, players, statistics, odds)
 **Point-in-time correctness.** A match's feature snapshot is written *before* that
 match is folded into any average, so no forecast can see its own result. A test
 recomputes sampled snapshots from strictly earlier matches and fails if a single
-number disagrees — it was verified to fail when the decay setting was altered.
+number disagrees. It was verified to fail when the decay setting was altered.
 
 **Features.** Exponentially weighted team form (half-life 6 matches), ridge-fitted
 attack and defence ratings per competition, referee profiles (half-life 10
@@ -56,7 +56,7 @@ before replacing it.
 
 **Models.** LightGBM with a Poisson objective predicts the mean; a negative
 binomial turns that into a distribution, because these counts vary more than a
-Poisson allows. Cards uses two variants — with and without referee history —
+Poisson allows. Cards uses two variants, with and without referee history,
 because referees are often named only days before kickoff.
 
 **Walk-forward evaluation.** Models are retrained repeatedly through a season and
@@ -74,8 +74,8 @@ production.
 | [football-data.co.uk](https://www.football-data.co.uk) | Results, statistics, fixtures | Free, no key; automatic fallback for 16 of the 17 leagues, no player data |
 | [The Odds API](https://the-odds-api.com) | Corners and cards prices | Free tier: 500 credits a month, so fixtures are sampled |
 
-The pipeline detects an unusable primary feed — a lapsed subscription answers
-politely with nothing — switches to the free source, and records a notification
+The pipeline detects an unusable primary feed (a lapsed subscription answers
+politely with nothing), switches to the free source, and records a notification
 rather than reporting success.
 
 ## Running it
@@ -97,7 +97,7 @@ docker compose run --rm api alembic upgrade head
 docker compose up -d api
 ```
 
-The weekly work is one command, and the order within it matters — features must
+The weekly work is one command, and the order within it matters: features must
 follow results, forecasts must follow features:
 
 ```bash
@@ -125,9 +125,9 @@ set, and is rate limited per caller. `/health` stays open for monitoring.
 | `GET /api/v1/performance` | Live accuracy from settled forecasts |
 | `GET /api/v1/notifications` | What the platform wants the operator to know |
 
-Picks are ranked by how far a forecast departs from its **base rate** — the league's
-own rate for match markets, the player's own for player markets — not by distance
-from 50/50. That choice matters: on 2024/25 corners, ranking by distance from
+Picks are ranked by how far a forecast departs from its **base rate**: the league's
+own rate for match markets, the player's own for player markets, rather than by
+distance from 50/50. That choice matters: on 2024/25 corners, ranking by distance from
 50/50 added nothing measurable, while ranking by distance from the league rate
 added 8.4 points of hit rate.
 
@@ -136,8 +136,8 @@ added 8.4 points of hit rate.
 Being accurate is not the same as beating a price. `models.prediction_outcomes`
 stores, for every played fixture, the last forecast made before kickoff, the
 actual count, and the best price available at the time. `GET /api/v1/performance`
-reports hit rate, log loss against the observed rate, and — where prices were
-collected — profit and return for a flat stake on each side the model prices as
+reports hit rate, log loss against the observed rate and, where prices were
+collected, profit and return for a flat stake on each side the model prices as
 value.
 
 3,180 forecasts have been settled so far. Two findings already recorded:
@@ -145,8 +145,8 @@ value.
 - **Margins are the hurdle.** 8.7% on corners and cards, roughly double the main
   markets, so an edge must be large to survive.
 - **Accumulator correlation is not an edge.** Cards and fouls in the same match
-  land together 1.24× more often than multiplying their base rates suggests —
-  but conditional on the models' own forecasts the figure is 0.94× [0.90, 0.98],
+  land together 1.24× more often than multiplying their base rates suggests.
+  But conditional on the models' own forecasts the figure is 0.94× [0.90, 0.98],
   slightly *worse* than independent. The models had already extracted it.
 
 ## Tests
