@@ -27,4 +27,16 @@ jobs:
       # else -- the provider quirks, the point-in-time rule, the probability
       # maths, authentication -- runs on every push.
       - name: Run tests
-        run: pytest -m "not db" -q
+        run: |
+          set -o pipefail
+          status=0
+          pytest -m "not db" -q 2>&1 | tee pytest.log || status=$?
+          # Put the tail of the run in the job summary, so a failure can be read
+          # without downloading the logs.
+          {
+            echo "### pytest"
+            echo '```'
+            tail -60 pytest.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $status
