@@ -31,6 +31,24 @@ jobs:
       vars.EC2_INSTANCE_ID != ''
 
     steps:
+      # What GitHub actually claims. The trust policy has to match these exactly,
+      # and the error AWS returns when it does not is the same whatever the cause.
+      - name: Show the identity GitHub is presenting
+        run: |
+          response=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com")
+          PAYLOAD=$(python3 -c "import json,sys; print(json.load(sys.stdin)['value'].split('.')[1])" <<<"$response")
+          export PAYLOAD
+          python3 - <<'PY'
+          import base64, json, os
+          raw = os.environ["PAYLOAD"]
+          raw += "=" * (-len(raw) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(raw))
+          wanted = ("sub", "aud", "repository", "repository_owner", "ref", "event_name", "workflow")
+          for key in wanted:
+              if key in claims:
+                  print(f"{key}: {claims[key]}")
+          PY
+
       - name: Assume the deploy role
         uses: aws-actions/configure-aws-credentials@v4
         with:
