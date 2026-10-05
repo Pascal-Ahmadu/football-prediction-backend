@@ -36,6 +36,10 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
+          # The action tags the session by default, which the role would then
+          # also have to allow (sts:TagSession). Nothing here reads those tags,
+          # so it is simpler not to send them.
+          role-skip-session-tagging: true
 
       - name: Pull, rebuild and restart on the instance
         id: send
