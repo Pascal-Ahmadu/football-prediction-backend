@@ -46,7 +46,8 @@ jobs:
           wanted = ("sub", "aud", "repository", "repository_owner", "ref", "event_name", "workflow")
           for key in wanted:
               if key in claims:
-                  print(f"{key}: {claims[key]}")
+                  # ::notice:: so it lands in the annotations, readable without logs
+                  print(f"::notice::{key} = {claims[key]}")
           PY
 
       - name: Assume the deploy role
