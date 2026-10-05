@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # The database tests need the real database with six seasons of data in it,
+      # which no runner has. They are marked `db` and skipped here; everything
+      # else -- the provider quirks, the point-in-time rule, the probability
+      # maths, authentication -- runs on every push.
+      - name: Run tests
+        run: pytest -m "not db" -q

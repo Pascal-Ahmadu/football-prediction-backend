@@ -1,5 +1,7 @@
 # Football micro-event prediction backend
 
+[![Tests](https://github.com/Pascal-Ahmadu/football-prediction-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Pascal-Ahmadu/football-prediction-backend/actions/workflows/ci.yml)
+
 Forecasts five football markets (total corners, total cards, total fouls, player
 shots on target and player fouls committed) for 17 European leagues, and scores
 its own forecasts against results and bookmaker prices afterwards.
@@ -153,8 +155,11 @@ value.
 
 ```bash
 pytest                # 134 tests
-pytest -m "not db"    # unit tests only; the rest skip when Postgres is down
+pytest -m "not db"    # the 114 that need no database; this is what CI runs
 ```
+
+Every push runs the second set through GitHub Actions. The 20 database tests
+need six seasons of real data, so they run locally.
 
 They cover provider quirks that fail silently (card statistics omitted from
 otherwise complete payloads, possession reported as 0/0, duplicate fixture ids),
