@@ -39,4 +39,8 @@ jobs:
             tail -60 pytest.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          # Also raise them as annotations, which are readable without the logs.
+          if [ "$status" -ne 0 ]; then
+            grep -E "^(FAILED|ERROR)|^E  |ImportError|ModuleNotFound" pytest.log               | head -20 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
           exit $status
