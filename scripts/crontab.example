@@ -7,8 +7,10 @@
 PROJECT=/opt/fmep
 SHELL=/bin/bash
 
-# Monday 07:00 -- full refresh: results, fixtures, features, forecasts, settlement
-0 7 * * 1 cd $PROJECT && scripts/run_weekly.sh
+# Tuesday 09:00 -- full refresh: results, fixtures, features, forecasts, settlement.
+# NOT Monday: football-data.co.uk publishes a round a day or two after it is
+# played, so a Monday morning run reads last week's file and quietly does nothing.
+0 9 * * 2 cd $PROJECT && scripts/run_weekly.sh
 
 # Thursday 18:00 -- short refresh once weekend referees are named, with market prices
 0 18 * * 4 cd $PROJECT && scripts/run_weekly.sh --days-back 3 --days-ahead 4 --with-odds
