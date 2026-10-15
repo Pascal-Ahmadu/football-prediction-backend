@@ -163,13 +163,16 @@ async def run(args: argparse.Namespace) -> None:
         f"    teams and referees: {historical} historical + {upcoming} upcoming "
         f"({settings.feature_set_version}) in {time.monotonic() - step:.0f}s"
     )
-    step = time.monotonic()
-    async with SessionLocal() as session:
-        historical, upcoming = await players.build(session)
-    print(
-        f"    players: {historical} historical + {upcoming} upcoming "
-        f"({settings.player_feature_set_version}) in {time.monotonic() - step:.0f}s"
-    )
+    if settings.player_markets_enabled:
+        step = time.monotonic()
+        async with SessionLocal() as session:
+            historical, upcoming = await players.build(session)
+        print(
+            f"    players: {historical} historical + {upcoming} upcoming "
+            f"({settings.player_feature_set_version}) in {time.monotonic() - step:.0f}s"
+        )
+    else:
+        print("    players: paused (no per-player statistics from the free source)")
 
     # Results arriving is the one thing nothing else can compensate for.
     async with SessionLocal() as session:
@@ -205,7 +208,7 @@ async def run(args: argparse.Namespace) -> None:
                 f"    {model['model_version']}: {model['fixtures']} fixtures, "
                 f"recent hit {model['hit_rate']:.1%} at {model['line']}"
             )
-    for market_name in player_predict.FORECASTS:
+    for market_name in (player_predict.FORECASTS if settings.player_markets_enabled else ()):
         async with SessionLocal() as session:
             summary = await player_predict.predict(session, market_name)
         print(
@@ -253,7 +256,10 @@ async def run(args: argparse.Namespace) -> None:
                 min_confidence=0.05, competition_id=None, limit=200,
                 rank_by="league",
             )
-            for market_name in (*predict.FORECASTS, *player_predict.FORECASTS)
+            for market_name in (
+                *predict.FORECASTS,
+                *(player_predict.FORECASTS if settings.player_markets_enabled else ()),
+            )
         }
 
     print(

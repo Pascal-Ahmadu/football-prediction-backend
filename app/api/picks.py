@@ -19,10 +19,11 @@ from typing import Literal
 
 from scipy.stats import poisson
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.db import get_session
 from app.modelling.player_predict import FORECASTS as PLAYER_FORECASTS
 from app.modelling.predict import FORECASTS
@@ -78,6 +79,15 @@ async def list_picks(
 ) -> list[Pick]:
     """Upcoming fixtures where the latest forecast leans clearly one way."""
     player_market = market in PLAYER_FORECASTS
+    if player_market and not settings.player_markets_enabled:
+        # Better to say so than to serve forecasts built on ageing player data.
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Player markets are paused: the current data source has no per-player "
+                "statistics, so these forecasts would be built on stale form."
+            ),
+        )
     if line is None:
         line = PLAYER_FORECASTS[market].lines[0] if player_market else FORECASTS[market].reference_line
     line_key = str(float(line))

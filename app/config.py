@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     feature_set_version: str = "rates-v5"
     rating_lambda: float = 5.0
     rating_min_rows: int = 300
+    # Player props need per-player statistics, which only the paid provider has.
+    # On the free source their forecasts would age with every run, so they are
+    # paused: no player features, no player forecasts, and /picks says why.
+    player_markets_enabled: bool = False
     player_half_life: float = 10.0
     player_feature_set_version: str = "players-v2"
 

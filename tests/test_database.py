@@ -63,11 +63,7 @@ class TestApi:
         assert response.status_code == 422
         assert response.headers["content-type"].startswith("application/problem+json")
 
-    @pytest.mark.parametrize(
-        "market",
-        ["total_corners", "total_cards", "total_fouls",
-         "player_shots_on_target", "player_fouls_committed"],
-    )
+    @pytest.mark.parametrize("market", ["total_corners", "total_cards", "total_fouls"])
     def test_picks_respect_confidence(self, client, market):
         response = client.get(
             "/api/v1/picks", params={"market": market, "min_confidence": 0.1, "limit": 200}
@@ -77,7 +73,7 @@ class TestApi:
             assert pick["confidence"] >= 0.1 - 1e-9
             assert pick["selection"] in ("over", "under")
 
-    @pytest.mark.parametrize("market", ["total_corners", "player_fouls_committed"])
+    @pytest.mark.parametrize("market", ["total_corners", "total_fouls"])
     def test_picks_back_the_side_the_model_favours_over_the_base_rate(self, client, market):
         """The pick is the disagreement, not simply whichever side is likelier."""
         picks = client.get("/api/v1/picks", params={"market": market, "limit": 50}).json()
@@ -165,13 +161,19 @@ class TestPerformance:
             assert row["settled"] > 0
             assert row["hours_before"] > 0, "a forecast must predate its kickoff"
 
-    def test_player_picks_list_each_player_once(self, client):
-        picks = client.get(
-            "/api/v1/picks", params={"market": "player_fouls_committed", "limit": 50}
-        ).json()
-        names = [p["entity_name"] for p in picks]
-        assert all(names), "player picks must name the player"
-        assert len(names) == len(set(names))
+    @pytest.mark.parametrize(
+        "market", ["player_fouls_committed", "player_shots_on_target"]
+    )
+    def test_paused_player_markets_say_so(self, client, market):
+        """Serving forecasts built on ageing player data would be worse than refusing."""
+        from app.config import settings
+
+        if settings.player_markets_enabled:
+            pytest.skip("player markets are enabled in this environment")
+        response = client.get("/api/v1/picks", params={"market": market, "limit": 5})
+        assert response.status_code == 409
+        assert response.headers["content-type"].startswith("application/problem+json")
+        assert "paused" in response.json()["detail"]
 
 
 class TestAccumulator:
