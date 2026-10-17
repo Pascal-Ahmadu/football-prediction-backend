@@ -80,6 +80,21 @@ MARKETS = {
         # too: those are partial statistics from the provider.
         min_per_side=2,
     ),
+    "total_shots_on_target": Market(
+        name="total_shots_on_target",
+        target_columns=("shots_on_target",),
+        team_features=(
+            "shots_on_target_for",
+            "shots_on_target_against",
+            "shots_on_target_for_venue",
+            "shots_on_target_against_venue",
+            # Total shots and possession say how much of the game a side spends
+            # attacking, which shapes how many of those shots are on target.
+            "shots_for",
+            "shots_against",
+            "possession_for",
+        ),
+    ),
 }
 
 MATCHES = text("""
@@ -88,7 +103,8 @@ MATCHES = text("""
            h.corners as h_corners, a.corners as a_corners,
            h.yellow as h_yellow, a.yellow as a_yellow,
            h.red as h_red, a.red as a_red,
-           h.fouls as h_fouls, a.fouls as a_fouls
+           h.fouls as h_fouls, a.fouls as a_fouls,
+           h.shots_on_target as h_shots_on_target, a.shots_on_target as a_shots_on_target
     from core.matches m
     join core.seasons se on se.season_id = m.season_id
     join core.team_match_stats h

@@ -58,12 +58,19 @@ FORECASTS = {
     "total_fouls": ForecastSpec(
         "fouls", (20.5, 21.5, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, 28.5), 24.5
     ),
+    "total_shots_on_target": ForecastSpec(
+        "sot", (5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5), 8.5
+    ),
 }
 
 CALIBRATION_NOTE = {
     "total_corners": "raw ECE 0.0123 beat isotonic 0.0139 in 2024/25 walk-forward",
     "total_cards": "raw ECE 0.0116 in 2025/26 final evaluation; no adjustment needed",
     "total_fouls": "raw ECE 0.0174 in 2025/26 final evaluation; no adjustment needed",
+    "total_shots_on_target": (
+        "raw ECE 0.0179 at 8.5 in the 2025/26 final evaluation -- inside the 0.02 "
+        "the specification asks for, but the least well calibrated of the markets"
+    ),
 }
 
 

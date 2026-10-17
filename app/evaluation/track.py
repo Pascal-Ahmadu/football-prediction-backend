@@ -29,6 +29,7 @@ MATCH_ACTUALS = {
     "total_corners": "h.corners + a.corners",
     "total_cards": "h.yellow + a.yellow + h.red + a.red",
     "total_fouls": "h.fouls + a.fouls",
+    "total_shots_on_target": "h.shots_on_target + a.shots_on_target",
 }
 PLAYER_ACTUALS = {
     "player_shots_on_target": "s.shots_on_target",
