@@ -60,6 +60,12 @@ jobs:
           # so it is simpler not to send them.
           role-skip-session-tagging: true
 
+      # Both images, not just the api. The scheduled pipeline runs in the
+      # `jobs` service, which builds from the same Dockerfile but is a separate
+      # image: building only the api left cron running whatever code `jobs` was
+      # last built from. That failed silently -- the run still reported success,
+      # it just did the old version's work. Naming the service explicitly builds
+      # it even though it sits behind a compose profile.
       - name: Pull, rebuild and restart on the instance
         id: send
         run: |
@@ -72,7 +78,7 @@ jobs:
               "cd /opt/fmep",
               "git fetch --all --prune",
               "git reset --hard origin/main",
-              "docker compose build api",
+              "docker compose build api jobs",
               "docker compose run --rm api alembic upgrade head",
               "docker compose up -d api",
               "docker compose ps"
