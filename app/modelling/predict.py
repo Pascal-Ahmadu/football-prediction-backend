@@ -61,12 +61,19 @@ FORECASTS = {
     "total_shots_on_target": ForecastSpec(
         "sot", (5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5), 8.5
     ),
+    "total_goals": ForecastSpec("goals", (0.5, 1.5, 2.5, 3.5, 4.5, 5.5), 2.5),
 }
 
 CALIBRATION_NOTE = {
     "total_corners": "raw ECE 0.0123 beat isotonic 0.0139 in 2024/25 walk-forward",
     "total_cards": "raw ECE 0.0116 in 2025/26 final evaluation; no adjustment needed",
     "total_fouls": "raw ECE 0.0174 in 2025/26 final evaluation; no adjustment needed",
+    "total_goals": (
+        "raw ECE 0.0167 at 2.5 in the 2025/26 final evaluation. Goals are very "
+        "nearly Poisson -- mean 2.71 against variance 2.63 -- so the dispersion "
+        "fit runs to its ceiling and the negative binomial collapses to a "
+        "Poisson, which is the right answer rather than a failure to converge"
+    ),
     "total_shots_on_target": (
         "raw ECE 0.0179 at 8.5 in the 2025/26 final evaluation -- inside the 0.02 "
         "the specification asks for, but the least well calibrated of the markets"

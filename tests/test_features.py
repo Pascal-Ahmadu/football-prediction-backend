@@ -60,6 +60,32 @@ class TestTeamState:
         for name in RATED:
             assert f"{name}_attack" in features and f"{name}_defence" in features
 
+    def test_conversion_is_goals_over_shots_on_target(self):
+        state = TeamState()
+        home = side(1, home_team_id=1, goals=2, shots_on_target=5)
+        away = side(2, home_team_id=1, goals=1, shots_on_target=4)
+        state.fold(home, away, lam=0.9)
+        state.fold(away, home, lam=0.9)
+
+        features = state.features(1, "home", competition_id=1)
+        assert features["goals_per_sot_for"] == pytest.approx(2 / 5)
+        assert features["goals_per_sot_against"] == pytest.approx(1 / 4)
+
+    def test_conversion_undefined_without_shots_on_target(self):
+        """No shots on target means no conversion rate, not a rate of zero."""
+        state = TeamState()
+        home = side(1, home_team_id=1, goals=0, shots_on_target=0)
+        away = side(2, home_team_id=1, goals=0, shots_on_target=0)
+        state.fold(home, away, lam=0.9)
+        state.fold(away, home, lam=0.9)
+
+        assert state.features(1, "home", competition_id=1)["goals_per_sot_for"] is None
+
+    def test_conversion_undefined_before_any_match(self):
+        features = TeamState().features(1, "home", competition_id=1)
+        assert features["goals_per_sot_for"] is None
+        assert features["goals_per_sot_against"] is None
+
 
 def test_ratings_find_the_strong_attack():
     rows = []

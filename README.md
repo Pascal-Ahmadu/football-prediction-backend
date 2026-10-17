@@ -2,10 +2,10 @@
 
 [![Tests](https://github.com/Pascal-Ahmadu/football-prediction-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Pascal-Ahmadu/football-prediction-backend/actions/workflows/ci.yml)
 
-Forecasts six football markets (total corners, total cards, total fouls, total
-shots on target, player shots on target and player fouls committed) for 17
-European leagues, and scores its own forecasts against results and bookmaker
-prices afterwards.
+Forecasts seven football markets (total goals, total corners, total cards,
+total fouls, total shots on target, player shots on target and player fouls
+committed) for 17 European leagues, and scores its own forecasts against results
+and bookmaker prices afterwards.
 
 Built to the BRD/SRD specification BRD-SRD-FMEP-001. Python 3.12, FastAPI,
 PostgreSQL 16, SQLAlchemy 2 (async), Alembic, LightGBM.
@@ -20,6 +20,7 @@ Each market was developed on the 2024/25 season and then evaluated **once** on
 | Total fouls | 24.5 | 5,602 matches | +0.0881 | 67.7% | 0.0174 |
 | Total cards | 4.5 | 5,624 matches | +0.0240 | 60.6% | 0.0116 |
 | Total shots on target | 8.5 | 5,614 matches | +0.0187 | 57.4% | 0.0179 |
+| Total goals | 2.5 | 5,624 matches | +0.0085 | 54.9% | 0.0167 |
 | Total corners | 9.5 | 5,623 matches | +0.0067 | 55.1% | 0.0161 |
 | Player fouls committed | 0.5 | 174,006 appearances | +0.0217 | n/a | 0.0074 |
 | Player shots on target | 0.5 | 174,006 appearances | +0.0147 | n/a | 0.0048 |
@@ -29,7 +30,13 @@ baseline: for match markets, always predicting the side more common in that
 league; for player markets, the player's own rate per 90 minutes times his usual
 minutes, shrunk toward his position's average. Calibration error is the mean gap
 between stated probability and observed frequency; the specification asks for
-under 0.02 and all six markets meet it.
+under 0.02 and all seven markets meet it.
+
+Goals are the hardest of these to add anything to. The model beats the baseline
+on log loss, but only at the 2.5 line does it ever disagree with what usually
+happens in that league; at 1.5 and 3.5 it picks the same side the base rate
+would, so its only contribution there is a better probability, not a different
+answer.
 
 Accuracy is not profit. On the market prices collected so far, bookmaker margins
 on these markets average 8.7%, and whether any edge survives that is still being
@@ -172,7 +179,7 @@ providers, API authentication and rate limits, and the pick-selection logic.
 
 - **Profitability is unproven.** Accurate and well calibrated, but not yet shown
   to beat a bookmaker's price over a meaningful sample.
-- **Every test season is spent.** All six markets used 2025/26 as their one-off
+- **Every test season is spent.** All seven markets used 2025/26 as their one-off
   evaluation, so future changes can only be judged on 2024/25 plus live results.
 - **Player markets depend on the paid source.** The free fallback carries no
   player data, so those two markets go stale without a subscription.

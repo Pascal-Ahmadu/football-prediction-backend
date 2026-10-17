@@ -59,11 +59,15 @@ class TestApi:
                 assert over == pytest.approx(line["prob_over"], abs=1e-3)
 
     def test_unknown_market_is_rejected(self, client):
-        response = client.get("/api/v1/picks", params={"market": "total_goals"})
+        response = client.get("/api/v1/picks", params={"market": "total_offsides"})
         assert response.status_code == 422
         assert response.headers["content-type"].startswith("application/problem+json")
 
-    @pytest.mark.parametrize("market", ["total_corners", "total_cards", "total_fouls"])
+    @pytest.mark.parametrize(
+        "market",
+        ["total_corners", "total_cards", "total_fouls", "total_shots_on_target",
+         "total_goals"],
+    )
     def test_picks_respect_confidence(self, client, market):
         response = client.get(
             "/api/v1/picks", params={"market": market, "min_confidence": 0.1, "limit": 200}

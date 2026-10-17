@@ -55,13 +55,15 @@ async def list_picks(
     session: AsyncSession = Depends(get_session),
     market: Literal[
         "total_corners", "total_cards", "total_fouls", "total_shots_on_target",
+        "total_goals",
         "player_shots_on_target", "player_fouls_committed",
     ] = Query("total_corners"),
     line: float | None = Query(
         None,
         description=(
             "Line; defaults to the market's validated line "
-            "(corners 9.5, cards 4.5, fouls 24.5, shots on target 8.5, player markets 0.5)"
+            "(corners 9.5, cards 4.5, fouls 24.5, shots on target 8.5, "
+            "goals 2.5, player markets 0.5)"
         ),
     ),
     min_confidence: float = Query(

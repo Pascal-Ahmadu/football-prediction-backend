@@ -30,6 +30,8 @@ MATCH_ACTUALS = {
     "total_cards": "h.yellow + a.yellow + h.red + a.red",
     "total_fouls": "h.fouls + a.fouls",
     "total_shots_on_target": "h.shots_on_target + a.shots_on_target",
+    # Goals are kept on the match itself, not in either side's statistics.
+    "total_goals": "m.home_goals + m.away_goals",
 }
 PLAYER_ACTUALS = {
     "player_shots_on_target": "s.shots_on_target",

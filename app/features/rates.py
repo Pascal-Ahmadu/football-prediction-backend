@@ -19,7 +19,7 @@ from collections import defaultdict
 from datetime import UTC, datetime
 
 import numpy as np
-from sqlalchemy import delete, select
+from sqlalchemy import case, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -28,7 +28,8 @@ from app.models import FeatureSnapshot, Match, Season, TeamMatchStats
 
 logger = logging.getLogger(__name__)
 
-STATS = (
+# Read straight from core.team_match_stats, one row per side of the match.
+TEAM_STATS = (
     "corners",
     "fouls",
     "yellow",
@@ -38,7 +39,12 @@ STATS = (
     "possession",
 )
 
-RATED = ("corners", "fouls", "yellow")
+# Goals are stored on the match itself rather than per side, so the query below
+# picks out each team's own goals under this name. Everything after that folds
+# and reads goals exactly like any other statistic.
+STATS = (*TEAM_STATS, "goals")
+
+RATED = ("corners", "fouls", "yellow", "goals")
 
 
 def decay_factor(half_life: float) -> float:
@@ -123,6 +129,16 @@ class TeamState:
             attack, defence = table.get(team_id, (None, None))
             features[f"{name}_attack"] = attack
             features[f"{name}_defence"] = defence
+        # Finishing at one end and goalkeeping at the other: how many of the
+        # shots on target actually went in. Shot volume alone cannot say that,
+        # and a zero denominator leaves the rate undefined rather than zero --
+        # the same reasoning as ref_cards_per_foul below.
+        for side in ("for", "against"):
+            goals = features[f"goals_{side}"]
+            on_target = features[f"shots_on_target_{side}"]
+            features[f"goals_per_sot_{side}"] = (
+                goals / on_target if goals is not None and on_target else None
+            )
         return features
 
     def fold(self, row, opponent, lam: float) -> None:
@@ -202,7 +218,11 @@ async def build(session: AsyncSession) -> tuple[int, int]:
             Match.referee_id,
             Season.competition_id,
             TeamMatchStats.team_id,
-            *(getattr(TeamMatchStats, name) for name in STATS),
+            *(getattr(TeamMatchStats, name) for name in TEAM_STATS),
+            case(
+                (TeamMatchStats.team_id == Match.home_team_id, Match.home_goals),
+                else_=Match.away_goals,
+            ).label("goals"),
         )
         .join(TeamMatchStats, TeamMatchStats.match_id == Match.match_id)
         .join(Season, Season.season_id == Match.season_id)

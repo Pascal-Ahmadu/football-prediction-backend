@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
     feature_half_life: float = 6.0
     referee_half_life: float = 10.0
-    feature_set_version: str = "rates-v5"
+    feature_set_version: str = "rates-v6"
     rating_lambda: float = 5.0
     rating_min_rows: int = 300
     # Player props need per-player statistics, which only the paid provider has.
