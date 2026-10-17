@@ -9,6 +9,14 @@ Runs the weekly pipeline unattended, for Windows Task Scheduler.
 Run by hand exactly as the scheduler does:
     powershell -ExecutionPolicy Bypass -File scripts\run_weekly.ps1
     powershell -ExecutionPolicy Bypass -File scripts\run_weekly.ps1 --days-back 3 --days-ahead 4
+
+Scheduled in Task Scheduler under \FMEP\: the full refresh on TUESDAY 09:00, and
+a short one on Thursday 18:00 with --days-back 3 --days-ahead 4 --with-odds.
+Tuesday, not Monday: football-data.co.uk publishes a round a day or two after it
+is played, so a Monday morning run reads last week's file and quietly does
+nothing. Check the tasks are still ENABLED, not merely present --
+    Get-ScheduledTask -TaskPath "\FMEP\*" | Select-Object TaskName, State
+a disabled task looks perfectly healthy until you read that column.
 #>
 
 # Native programs (docker, python) write warnings to stderr; Windows PowerShell 5.1
